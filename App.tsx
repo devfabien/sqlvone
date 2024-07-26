@@ -38,6 +38,16 @@ export default function App() {
     setTodo("");
   };
 
+  // const updateTodo = async () => {
+  //   await db.runAsync(``);
+  // };
+  const deleteTodo = async (id: any) => {
+    await db.runAsync(`DELETE FROM todos WHERE id=?`, [id]);
+    const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
+    setTodoArray(updatedResult);
+    Alert.alert("Todo deleted");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
@@ -64,6 +74,7 @@ export default function App() {
                       padding: 7,
                       borderRadius: 8,
                     }}
+                    onPress={() => deleteTodo(el.id)}
                   >
                     <Text>Del</Text>
                   </TouchableOpacity>

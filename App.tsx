@@ -31,7 +31,11 @@ export default function App() {
   }, []);
 
   const addTodo = async () => {
-    console.log(todo);
+    await db.runAsync(`INSERT INTO todos (todo) values (?)`, [todo]);
+    const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
+    setTodoArray(updatedResult);
+    Alert.alert("todo added");
+    setTodo("");
   };
 
   return (

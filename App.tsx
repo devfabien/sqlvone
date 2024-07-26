@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as SQLite from "expo-sqlite";
+import InputComponent from "./textIn";
 
 export default function App() {
   const [todo, setTodo] = useState("");
@@ -40,9 +41,14 @@ export default function App() {
     }
   };
 
-  // const updateTodo = async () => {
-  //   await db.runAsync(``);
-  // };
+  const updateTodo = async ({ task, id }: any) => {
+    await db.runAsync(`UPDATE todos SET todo = ? WHERE id = ?`, [task, id]);
+    const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
+    setTodoArray(updatedResult);
+    Alert.alert("Todo Updated");
+    setTodo("");
+  };
+
   const deleteTodo = async (id: any) => {
     await db.runAsync(`DELETE FROM todos WHERE id=?`, [id]);
     const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
@@ -54,8 +60,7 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.inputStyles}
+        <InputComponent
           placeholder="Enter text"
           onChangeText={setTodo}
           value={todo}
@@ -86,6 +91,7 @@ export default function App() {
                       padding: 7,
                       borderRadius: 8,
                     }}
+                    onPress={() => updateTodo({ task: todo, id: el.id })}
                   >
                     <Text>Upd</Text>
                   </TouchableOpacity>
@@ -107,7 +113,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginVertical: 19,
-    padding: 10,
+    padding: 5,
     borderWidth: 1,
     borderColor: "gray",
     borderRadius: 7,

@@ -31,11 +31,13 @@ export default function App() {
   }, []);
 
   const addTodo = async () => {
-    await db.runAsync(`INSERT INTO todos (todo) values (?)`, [todo]);
-    const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
-    setTodoArray(updatedResult);
-    Alert.alert("todo added");
-    setTodo("");
+    if (todo.trim().length > 0) {
+      await db.runAsync(`INSERT INTO todos (todo) values (?)`, [todo]);
+      const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
+      setTodoArray(updatedResult);
+      Alert.alert("Todo added");
+      setTodo("");
+    }
   };
 
   // const updateTodo = async () => {

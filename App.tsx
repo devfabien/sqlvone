@@ -1,21 +1,20 @@
 import { StatusBar } from "expo-status-bar";
+import { DataStore } from "aws-amplify/datastore";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as SQLite from "expo-sqlite";
-import InputComponent from "./textIn";
+import InputComponent from "./src/textIn";
+import { SQLiteAdapter } from "@aws-amplify/datastore-storage-adapter/SQLiteAdapter";
 
 export default function App() {
   const [todo, setTodo] = useState("");
   const [visible, setVisible] = useState(false);
   const [todoArray, setTodoArray] = useState<any>();
+
+  DataStore.configure({
+    storageAdapter: SQLiteAdapter,
+  });
 
   const db = SQLite.openDatabaseSync("todo.db");
 

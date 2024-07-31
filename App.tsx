@@ -1,57 +1,76 @@
 import { StatusBar } from "expo-status-bar";
+import { DataStore, Predicates } from "@aws-amplify/datastore";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as SQLite from "expo-sqlite";
-import InputComponent from "./textIn";
+import InputComponent from "./src/textIn";
+import { ExpoSQLiteAdapter } from "@aws-amplify/datastore-storage-adapter/ExpoSQLiteAdapter";
+import { Todo } from "./src/models";
+import "@azure/core-asynciterator-polyfill";
+import { Amplify } from "aws-amplify";
+import config from "./src/amplifyconfiguration.json";
 
 export default function App() {
   const [todo, setTodo] = useState("");
-  const [visible, setVisible] = useState(false);
-  const [todoArray, setTodoArray] = useState<any>();
+  const [todoArray, setTodoArray] = useState<any[]>();
 
-  const db = SQLite.openDatabaseSync("todo.db");
+  Amplify.configure(config);
+  DataStore.configure({
+    storageAdapter: ExpoSQLiteAdapter,
+  });
 
   useEffect(() => {
-    async function setup() {
-      await db.execAsync(
-        `CREATE TABLE IF NOT EXISTS todos (id INTEGER PRIMARY KEY AUTOINCREMENT, todo TEXT)`
-      );
+    const init = async () => {
+      await DataStore.start();
 
-      const result = await db.getAllAsync(`SELECT * FROM todos`);
-      setTodoArray(result);
-    }
-    setup();
+      DataStore.observeQuery(Todo).subscribe(async (snapshot) => {
+        const { items } = snapshot;
+        if (!items) {
+          console.log("nno items");
+        }
+        setTodoArray(items);
+      });
+    };
+    init();
   }, []);
 
   const addTodo = async () => {
-    if (todo.trim().length > 0) {
-      await db.runAsync(`INSERT INTO todos (todo) values (?)`, [todo]);
-      const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
-      setTodoArray(updatedResult);
-      Alert.alert("Todo added");
-      setTodo("");
+    try {
+      await DataStore.start();
+      if (todo.trim().length > 0) {
+        await DataStore.save(new Todo({ name: todo, completed: false }));
+        const updatedResult = await DataStore.query(Todo);
+        setTodoArray(updatedResult);
+        Alert.alert("Todo added");
+        setTodo("");
+      }
+    } catch (error) {
+      console.warn("errrrror: ", error);
+      Alert.alert("Failed to add todo");
     }
   };
 
   const updateTodo = async ({ task, id }: any) => {
-    await db.runAsync(`UPDATE todos SET todo = ? WHERE id = ?`, [task, id]);
-    const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
+    const original = await DataStore.query(Todo, id);
+    if (original) {
+      await DataStore.save(
+        Todo.copyOf(original, (updated) => {
+          updated.name = task;
+        })
+      );
+    }
+    const updatedResult = await DataStore.query(Todo);
     setTodoArray(updatedResult);
     Alert.alert("Todo Updated");
     setTodo("");
   };
 
   const deleteTodo = async (id: any) => {
-    await db.runAsync(`DELETE FROM todos WHERE id=?`, [id]);
-    const updatedResult = await db.getAllAsync(`SELECT * FROM todos`);
+    const toDelete = await DataStore.query(Todo, id);
+    if (toDelete) {
+      await DataStore.delete(toDelete);
+    }
+    const updatedResult = await DataStore.query(Todo);
     setTodoArray(updatedResult);
     Alert.alert("Todo deleted");
   };
@@ -59,6 +78,11 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
+      <TouchableOpacity
+        style={{ padding: 15, backgroundColor: "black", marginTop: 40 }}
+      >
+        <Text style={{ color: "white" }}>Upload</Text>
+      </TouchableOpacity>
       <View style={styles.inputContainer}>
         <InputComponent
           placeholder="Enter text"
@@ -74,7 +98,7 @@ export default function App() {
           ? todoArray.map((el: any) => {
               return (
                 <View key={el.id} style={styles.dataContainer}>
-                  <Text style={styles.dataText}>{el.todo}</Text>
+                  <Text style={styles.dataText}>{el.name}</Text>
                   <TouchableOpacity
                     style={{
                       backgroundColor: "orange",

@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-sqlvone-dev-5f7fb-authRole",
+      "UnauthRoleArn": "arn:aws:iam::590184131451:role/amplify-sqlvone-dev-5f7fb-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::590184131451:role/amplify-sqlvone-dev-5f7fb-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-sqlvone-dev-5f7fb-deployment",
+      "UnauthRoleName": "amplify-sqlvone-dev-5f7fb-unauthRole",
+      "StackName": "amplify-sqlvone-dev-5f7fb",
+      "StackId": "arn:aws:cloudformation:us-east-1:590184131451:stack/amplify-sqlvone-dev-5f7fb/a7f070f0-4e44-11ef-ad56-0e87fe3d5aad",
+      "AmplifyAppId": "d11rjmyg7dw8sb"
+    },
+    "categories": {
+      "api": {
+        "sqlitevoneapi": {}
+      }
+    }
+  }
+}
